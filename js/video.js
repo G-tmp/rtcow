@@ -1,17 +1,28 @@
 
 'use strict';
 
+
 const startButton = document.getElementById('startButton');
 const hangupButton = document.getElementById('hangupButton');
 hangupButton.disabled = true;
 
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
+const errorMsg = document.getElementById('errorMsg');
 
 let pc;
 let localStream;
 
-const ws = new WebSocket("ws://127.0.0.1:12345/ws")
+let addr = "wss://127.0.0.1:12345/ws";
+if (window.location.hostname !== "127.0.0.1") {
+  addr = "wss://192.168.101.75:12345/ws"
+}
+const ws = new WebSocket(addr, "json");
+
+ws.onerror = (err) => {
+  showError(`${addr} error`)
+  console.log(err)
+}
 
 ws.onmessage = (e) => {
   let data = JSON.parse(e.data)
@@ -134,4 +145,8 @@ async function handleCandidate(candidate) {
   } else {
     await pc.addIceCandidate(candidate);
   }
+}
+
+function showError(e) {
+  errorMsg.innerHTML += `<p>${e}</p>`;
 }

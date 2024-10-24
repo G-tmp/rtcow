@@ -4,6 +4,7 @@ import(
 	"log"
     "net/http"
     "strings"
+    "strconv"
     "github.com/gorilla/websocket"
 )
 
@@ -13,7 +14,7 @@ var upgrader = &websocket.Upgrader{
     WriteBufferSize: 512,
     CheckOrigin: func(r *http.Request) bool {
         origin := r.Header.Get("Origin")
-        if strings.Contains(origin, "127.0.0.1") {
+        if strings.Contains(origin, "127.0.0.1") || strings.Contains(origin, "192.168.") {
         	return true
         }
 
@@ -21,13 +22,13 @@ var upgrader = &websocket.Upgrader{
     },
 }
 
-
 func serveWs(hub *hub, w http.ResponseWriter, r *http.Request) {
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         log.Println(err)
         return
     }
+    log.Println("new conn")
 
     client := &client{
         send: make(chan []byte, 516),
@@ -47,19 +48,26 @@ func main() {
     hub := newHub()
     go hub.run()
 
-    // http.Handle("/", http.FileServer(http.Dir("./web")))
+    http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request){
+        w.Write([]byte("SSL warning page"))
+    })
     http.HandleFunc("/ws", func (w http.ResponseWriter, r *http.Request){
         serveWs(hub, w, r)
     })
 
-    port := "12345"
-    log.Printf("ws://127.0.0.1:%v/ws \n", port)
-    if err := http.ListenAndServe(":" + port, nil); err != nil {
-        log.Println(err)
+    if Certificate != "" && Certificate_Key != "" {
+        log.Println("wss://127.0.0.1:" + strconv.Itoa(Port) + "/ws")
+        err := http.ListenAndServeTLS(":" + strconv.Itoa(Port), Certificate, Certificate_Key, nil)
+        if err != nil {
+            log.Println(err)
+            return
+        }
+    } else {
+        log.Println("ws://127.0.0.1:" + strconv.Itoa(Port) + "/ws")
+        err := http.ListenAndServe(":" + strconv.Itoa(Port), nil)
+        if err != nil {
+            log.Println(err)
+            return
+        }
     }
-}
-
-
-func init(){
-    log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
