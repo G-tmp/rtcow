@@ -32,4 +32,4 @@
 
 * [Secure websockets with self-signed certificate](https://stackoverflow.com/questions/5312311/secure-websockets-with-self-signed-certificate)
 
-* [firefox webrtc status](about:webrtc)
+* firefox webrtc status ```about:webrtc```
