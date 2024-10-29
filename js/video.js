@@ -9,18 +9,24 @@ hangupButton.disabled = true;
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 const errorMsg = document.getElementById('errorMsg');
+const httpAddress = document.getElementById('httpAddr');
 
 let pc;
 let localStream;
 
-let addr = "wss://127.0.0.1:12345/ws";
+let host = "127.0.0.1:12345";
 if (window.location.hostname !== "127.0.0.1") {
-  addr = "wss://192.168.101.75:12345/ws"
+  host ="192.168.101.75:12345";
 }
-const ws = new WebSocket(addr, "json");
+let httpAddr = "https://" + host;
+let wsAddr = "wss://" + host + "/ws";
+
+const ws = new WebSocket(wsAddr, "json");
+httpAddress.href = httpAddr;
+httpAddress.innerHTML = httpAddr;
 
 ws.onerror = (err) => {
-  showError(`${addr} error`)
+  showError(`${wsAddr} connect faild`)
   console.log(err)
 }
 

@@ -1,4 +1,4 @@
-# A webrtc demo using RTCPeerConnection api, communication between two devices in LAN
+# A webrtc demo using WebRTC api, communication between two devices in LAN
 
 
 
@@ -12,7 +12,7 @@
 
 *  self-signed SSL CA certificates by [mkcert](https://github.com/FiloSottile/mkcert)
 
-* ```sigs``` is a signaling server writen by golang gorilla websocket
+* ```sigs``` is a signaling server to exchange ICE candidates, writen by golang gorilla websocket
 
 * websocket server serve a / route for SSL warning, wss connection from 192.168.101.* will be blocked, accept untrusted certificate before connect to wss
 
