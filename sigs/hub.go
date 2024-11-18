@@ -61,19 +61,19 @@ func (cs *clientSet) each(f func(c *client)){
 
 type hub struct {
 	clients		*clientSet
-	// boradcast 	chan []byte
+	// broadcast 	chan []byte
 	register  	chan *client
 	unregister  chan *client
 }
 
 func newHub() *hub {
 	return &hub{
-		register:  	 make(chan *client),
-		unregister:  make(chan *client),
-		clients:     &clientSet{
-            numbers: make(map[*client]struct{}),
+		register:     make(chan *client),
+		unregister:   make(chan *client),
+		clients:      &clientSet{
+            numbers:  make(map[*client]struct{}),
         },
-	}
+    }
 }
 
 func (hub *hub) run(){

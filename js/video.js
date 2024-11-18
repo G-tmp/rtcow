@@ -21,9 +21,9 @@ if (window.location.hostname !== "127.0.0.1") {
 let httpAddr = "https://" + host;
 let wsAddr = "wss://" + host + "/ws";
 
-const ws = new WebSocket(wsAddr, "json");
 httpAddress.href = httpAddr;
 httpAddress.innerHTML = httpAddr;
+const ws = new WebSocket(wsAddr, "json");
 
 ws.onerror = (err) => {
   showError(`${wsAddr} connect faild`)

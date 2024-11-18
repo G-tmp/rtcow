@@ -28,7 +28,7 @@ func serveWs(hub *hub, w http.ResponseWriter, r *http.Request) {
         log.Println(err)
         return
     }
-    log.Println("new conn")
+    log.Println(r.RemoteAddr)
 
     client := &client{
         send: make(chan []byte, 516),
