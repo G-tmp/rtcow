@@ -1,4 +1,4 @@
-# A webrtc demo using WebRTC api, communication between two devices in LAN
+# A webrtc demo on RTCPeerConnection api, communication between two devices in LAN
 
 
 
