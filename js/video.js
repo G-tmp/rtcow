@@ -16,14 +16,14 @@ let localStream;
 
 let host = "127.0.0.1:12345";
 if (window.location.hostname !== "127.0.0.1") {
-  host ="192.168.101.75:12345";
+  host ="192.168.101.86:12345";
 }
 let httpAddr = "https://" + host;
 let wsAddr = "wss://" + host + "/ws";
 
 httpAddress.href = httpAddr;
 httpAddress.innerHTML = httpAddr;
-const ws = new WebSocket(wsAddr, "json");
+const ws = new WebSocket(wsAddr);
 
 ws.onerror = (err) => {
   showError(`${wsAddr} connect faild`)
@@ -37,7 +37,7 @@ ws.onmessage = (e) => {
     console.log('not ready yet');
     return;
   }
-  
+  console.log(data)
   switch (data.type) {
     case 'offer':
       handleOffer(data);

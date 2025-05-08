@@ -10,23 +10,22 @@ const dataChannelSend = document.querySelector('textarea#dataChannelSend');
 const dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 
 let pc;
-let sendChannel;
-let receiveChannel;
+let dataChannel;
 
 let host = "127.0.0.1:12345";
 if (window.location.hostname !== "127.0.0.1") {
-  host ="192.168.101.75:12345";
+  host ="192.168.101.86:12345";
 }
 let httpAddr = "http://" + host;
 let wsAddr = "ws://" + host + "/ws";
 
 // httpAddress.href = httpAddr;
 // httpAddress.innerHTML = httpAddr;
-const ws = new WebSocket(wsAddr, "json");
+const ws = new WebSocket(wsAddr);
 
 ws.onmessage = e => {
   let data = JSON.parse(e.data)
-  
+  console.log(data)
   switch (data.type) {
     case 'offer':
       handleOffer(data);
@@ -61,35 +60,32 @@ ws.onopen = () => {
 }
 
 startButton.onclick = async () => {
-  startButton.disabled = true;
-  closeButton.disabled = false;
 
   await createPeerConnection();
-  sendChannel = pc.createDataChannel('sendDataChannel');
+  dataChannel = pc.createDataChannel('sendDataChannel');
 
-  sendChannel.onopen = () => {
+  dataChannel.onopen = () => {
     console.log('Send channel state is: open');
     dataChannelSend.disabled = false;
     dataChannelSend.focus();
+    startButton.disabled = true;
     sendButton.disabled = false;
     closeButton.disabled = false;
   };
 
-  sendChannel.onmessage = (e) => {
+  dataChannel.onmessage = (e) => {
     console.log('Received Message');
     dataChannelReceive.value = e.data;
   };
   
-  sendChannel.onclose = () => {
-    console.log('Send channel state is: open');
-    dataChannelSend.disabled = true;
-    sendButton.disabled = true;
-    closeButton.disabled = true;
+  dataChannel.onclose = () => {
+    console.log('Send channel state is: closed');
+    hangup();
   };
 
   const offer = await pc.createOffer();
-  ws.send(JSON.stringify({type: 'offer', sdp: offer.sdp}));
   await pc.setLocalDescription(offer);
+  ws.send(JSON.stringify({type: 'offer', sdp: offer.sdp}));
 };
 
 closeButton.onclick = async () => {
@@ -102,8 +98,8 @@ async function hangup() {
     pc.close();
     pc = null;
   }
-  sendChannel = null;
-  receiveChannel = null;
+
+  dataChannel = null;
   console.log('Closed peer connections');
   startButton.disabled = false;
   sendButton.disabled = true;
@@ -115,6 +111,7 @@ async function hangup() {
 
 function createPeerConnection() {
   pc = new RTCPeerConnection();
+  // fire when pc call setLocalDescription()
   pc.onicecandidate = e => {
     const message = {
       type: 'candidate',
@@ -140,8 +137,8 @@ async function handleOffer(offer) {
   await pc.setRemoteDescription(offer);
 
   const answer = await pc.createAnswer();
-  ws.send(JSON.stringify({type: 'answer', sdp: answer.sdp}));
   await pc.setLocalDescription(answer);
+  ws.send(JSON.stringify({type: 'answer', sdp: answer.sdp}));
 }
 
 async function handleAnswer(answer) {
@@ -158,6 +155,7 @@ async function handleCandidate(candidate) {
     return;
   }
   if (!candidate.candidate) {
+    // All candidates have been sent
     await pc.addIceCandidate(null);
   } else {
     await pc.addIceCandidate(candidate);
@@ -166,33 +164,34 @@ async function handleCandidate(candidate) {
 
 function sendData() {
   const data = dataChannelSend.value;
-  if (sendChannel) {
-    sendChannel.send(data);
-  } else {
-    receiveChannel.send(data);
+  dataChannelSend.value = "";
+  if (dataChannel) {
+    dataChannel.send(data);
   }
   console.log('Sent Data: ' + data);
 }
 
 function receiveChannelCallback(event) {
   console.log('Receive Channel Callback');
-  receiveChannel = event.channel;
+  dataChannel = event.channel;
 
-  receiveChannel.onmessage = (e) => {
+  dataChannel.onmessage = (e) => {
     console.log('Received Message');
     dataChannelReceive.value = e.data;
   };
 
-  receiveChannel.onopen = () => {
+  dataChannel.onopen = () => {
     console.log(`Receive channel state is: open`);
     dataChannelSend.disabled = false;
+    startButton.disabled = true;
     sendButton.disabled = false;
     closeButton.disabled = false;
   };
 
-  receiveChannel.onclose = () => {
+  dataChannel.onclose = () => {
     console.log(`Receive channel state is: close`);
     dataChannelSend.disabled = true;
+    startButton.disabled = false;
     sendButton.disabled = true;
     closeButton.disabled = true;
   };

@@ -4,7 +4,7 @@
 
 ## dev
 
-* SDP contain ICE candicates, ICE server is unneeded in LAN
+* peers exchange SDP(offer, answer) and ICE candidates via signaling server, ICE server is unneeded in LAN
 
 * ```mediaDevices.getUserMedia``` must using HTTPS or the file:/// URL scheme, or a page loaded from localhost
 
@@ -12,9 +12,13 @@
 
 *  self-signed SSL CA certificates by [mkcert](https://github.com/FiloSottile/mkcert)
 
-* ```sigs``` is a signaling server to exchange ICE candidates, writen by golang gorilla websocket
+* ```sigs``` is a signaling server writen by golang gorilla websocket
 
 * websocket server serve a / route for SSL warning, wss connection from 192.168.101.* will be blocked, accept untrusted certificate before connect to wss
+
+* RTCDataChannel relies on ```SCTP``` transport layer, reliable and ordered data transfer like TCP and message-based data like UDP
+
+* firefox ```about:webrtc```
 
 
 
@@ -32,4 +36,3 @@
 
 * [Secure websockets with self-signed certificate](https://stackoverflow.com/questions/5312311/secure-websockets-with-self-signed-certificate)
 
-* firefox webrtc status ```about:webrtc```
