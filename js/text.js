@@ -12,10 +12,8 @@ const dataChannelReceive = document.querySelector('textarea#dataChannelReceive')
 let pc;
 let dataChannel;
 
-let host = "127.0.0.1:12345";
-if (window.location.hostname !== "127.0.0.1") {
-  host ="192.168.101.86:12345";
-}
+let wsPort = ":12345";
+let host = window.location.hostname + wsPort;
 let httpAddr = "http://" + host;
 let wsAddr = "ws://" + host + "/ws";
 

@@ -3,7 +3,6 @@ package main
 import(
 	"log"
     "net/http"
-    "strings"
     "strconv"
     "github.com/gorilla/websocket"
 )
@@ -13,12 +12,7 @@ var upgrader = &websocket.Upgrader{
     ReadBufferSize: 512,
     WriteBufferSize: 512,
     CheckOrigin: func(r *http.Request) bool {
-        origin := r.Header.Get("Origin")
-        if strings.Contains(origin, "127.0.0.1") || strings.Contains(origin, "192.168.") {
-        	return true
-        }
-
-        return false
+        return true
     },
 }
 

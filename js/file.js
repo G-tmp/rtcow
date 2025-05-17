@@ -11,16 +11,13 @@ const sendFileButton = document.querySelector('button#sendFile');
 let receivedFile;
 let receiveBuffer = [];
 let receivedSize = 0;
-let sentSize = 0;
 
 let pc;
 let dataChannel;
 let fileReader;
 
-let host = "127.0.0.1:12345";
-if (window.location.hostname !== "127.0.0.1") {
-  host ="192.168.101.86:12345";
-}
+let wsPort = ":12345";
+let host = window.location.hostname + wsPort;
 let httpAddr = "http://" + host;
 let wsAddr = "ws://" + host + "/ws";
 
@@ -67,6 +64,7 @@ abortButton.onclick = () => {
   if (fileReader && fileReader.readyState === 1) {
     console.log('Abort read!');
     fileReader.abort();
+    receivedSize = 0;
   }
 }
 
@@ -74,6 +72,10 @@ async function startConnect(){
 	await createPeerConnection();
 	dataChannel = pc.createDataChannel("sendDataChannel");
 	dataChannel.binaryType = 'arraybuffer';
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  ws.send(JSON.stringify({type: 'offer', sdp: offer.sdp})); 
 
 	dataChannel.addEventListener("open", () => {
 		onReceiveChannelStateChange();
@@ -90,9 +92,6 @@ async function startConnect(){
 		onReceiveMessageCallback(e);
 	});
 
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  ws.send(JSON.stringify({type: 'offer', sdp: offer.sdp}));	
 }
 
 async function createPeerConnection(){
@@ -157,6 +156,7 @@ async function onReceiveChannelStateChange(){
 function receiveChannelCallback(e){
 	dataChannel = e.channel;
 	dataChannel.binaryType = 'arraybuffer';
+
 	dataChannel.addEventListener("open", () => {
 		onReceiveChannelStateChange();
 		sendFileButton.disabled = false;
@@ -172,13 +172,6 @@ function receiveChannelCallback(e){
 		onReceiveMessageCallback(e);
 	});
 
-	receivedSize = 0;
-  downloadAnchor.textContent = '';
-  downloadAnchor.removeAttribute('download');
-  if (downloadAnchor.href) {
-    URL.revokeObjectURL(downloadAnchor.href);
-    downloadAnchor.removeAttribute('href');
-  }
 }
 
 function onReceiveMessageCallback(e) {
@@ -186,6 +179,7 @@ function onReceiveMessageCallback(e) {
 		receivedFile = JSON.parse(e.data);
 		console.log(receivedFile);
 	  receiveProgress.max = receivedFile.size;
+    removeDownload();
 		return
 	}
 
@@ -262,4 +256,13 @@ function sendData(){
   };
 
   readSlice(0);
+}
+
+function removeDownload(){
+  downloadAnchor.textContent = '';
+  downloadAnchor.removeAttribute('download');
+  if (downloadAnchor.href) {
+    URL.revokeObjectURL(downloadAnchor.href);
+    downloadAnchor.removeAttribute('href');
+  }
 }
